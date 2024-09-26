@@ -1,40 +1,26 @@
-import tweetnlp
 import pandas as pd
+from parser import TweetParser
+from politics import SentimentAnalyzer
 
 
-# load model for sentiment analysis
-model = tweetnlp.load_model('sentiment')
-
-
-def inference(text):
-    """
-    Perform sentiment analysis on the given text.
-
-    Args:
-        text (str): The input text to analyze.
-
-    Returns:
-        dict: A dictionary containing the sentiment label and its probability.
-    """
-    label = model.sentiment(text, return_probability=True)
-    return label
-
-
-if __name__ == '__main__':
-
-    # Load the text data
-    with open('src/data/tweets_text.txt', 'r') as f:
-        tweets = f.readlines()
-        for tweet in tweets:
-            tweet = tweet.replace("\n", "").strip()
-            # Perform sentiment analysis
-            result = inference(tweet)
-            print(f"Text: {tweet}")
-            print(f"Sentiment: {result['label']}")
-            print(f"Probability: {result['probability']}")
-            print()
-            
-
-
+def main():
+    # Load the tweets from the CSV file
+    df = pd.read_csv("src/data/tweets.csv")
     
+    # Initialize the TweetParser and SentimentAnalyzer
+    parser = TweetParser()
+    analyzer = SentimentAnalyzer()
     
+    # Parse the tweets
+    parsed_tweets = parser.parse_tweets_as_df(df, label="__label__trump")
+
+    # Save the parsed tweets to a new CSV file
+    parsed_tweets.to_csv("src/data/parsed_tweets.csv", index=False)
+
+    # Print the sentiment analysis results for the first few tweets
+    for i in range(5):
+        tweet = parsed_tweets.iloc[i]
+        analyzer.print_results(tweet["tweet"])
+
+if __name__ == "__main__":
+    main()
